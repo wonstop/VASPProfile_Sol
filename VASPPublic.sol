@@ -7,15 +7,27 @@ contract VASPPlatform {
         string vcode;
         string ctrycode;
     }
-    address regulatoryAuthority;
     
+    struct BLProperty {
+        string S_name;
+        string S_DOB;
+        string S_ctry;
+        address S_addr;
+        bool Enabled_flag;
+        uint Update_Date;
+    }
+    
+    address regulatoryAuthority;
+    /*VASP*/
     mapping(string => mapping(string =>address)) VASPInfo;
     mapping(string => mapping(string => ShareVASPProperty)) shareVASP;
     /*blacklist*/
     mapping(string => mapping(string =>address)) BlacklistInfo;
+    mapping(address => BLProperty) shareBL; /*有問題待解決*/
     
     event BlacklistShared(
         string S_name,
+        string S_DOB,
         string S_ctry,
         address S_addr,
         bool Enabled_flag,
@@ -62,23 +74,56 @@ contract VASPPlatform {
         shareVASP[_vcode][_ctrycode].status = false;
 
     }
-    function updateBlacklist(
+    function addBlacklist(
         string memory _Sname,
         string memory _Sctry,
+        string memory _DOB,
         address _Saddr
     ) public {
         require(
             msg.sender == regulatoryAuthority, /*需要是政府來建立黑名單*/
             "You are not a regulator，[_VASPAddress] Error."
         );
+        uint256 update_time = now;
+        
         BlacklistInfo[_Sname][_Sctry] = address(_Saddr);
+        shareBL[_Saddr]=BLProperty(_Sname,_Sctry,_DOB,_Saddr,true,update_time);
         emit BlacklistShared(
             _Sname,
             _Sctry,
+            _DOB,
             _Saddr,
             true,
-            now
+            update_time
             );
     }
+    function getBL(
+        string memory _Vcode, string memory _Vctry, address _Saddr) public view returns (string memory, bool) {
+         require(
+            VASPInfo[_Vcode][_Vctry]==msg.sender ,
+            "You are not a VASP，[_Vcode] Error."
+         );
+        return (shareBL[_Saddr].S_name,shareBL[_Saddr].Enabled_flag);  /*有問題待解決*/
+        }
+    function delBlacklist(
+        address _Saddr
+    ) public {
+        require(
+            msg.sender == regulatoryAuthority, /*需要是政府來建立黑名單*/
+            "You are not a regulator，[_VASPAddress] Error."
+        );
+        shareBL[_Saddr].Enabled_flag = false;
+        shareBL[_Saddr].Update_Date = now;
+
+        emit BlacklistShared(
+            shareBL[_Saddr].S_name,
+            shareBL[_Saddr].S_ctry,
+            shareBL[_Saddr].S_DOB,
+            shareBL[_Saddr].S_addr,
+            shareBL[_Saddr].Enabled_flag,
+            shareBL[_Saddr].Update_Date
+            );
+    }    
 }
+
 
