@@ -23,7 +23,7 @@ contract VASPPlatform {
     mapping(string => mapping(string => ShareVASPProperty)) shareVASP;
     /*blacklist*/
     mapping(string => mapping(string =>address)) BlacklistInfo;
-    mapping(address => BLProperty) shareBL; /*有問題待解決*/
+    mapping(address => BLProperty) shareBL; 
     
     event BlacklistShared(
         string S_name,
@@ -103,13 +103,13 @@ contract VASPPlatform {
             VASPInfo[_Vcode][_Vctry]==msg.sender ,
             "You are not a VASP，[_Vcode] Error."
          );
-        return (shareBL[_Saddr].S_name,shareBL[_Saddr].Enabled_flag);  /*有問題待解決*/
+        return (shareBL[_Saddr].S_name,shareBL[_Saddr].Enabled_flag); 
         }
     function delBlacklist(
         address _Saddr
     ) public {
         require(
-            msg.sender == regulatoryAuthority, /*需要是政府來建立黑名單*/
+            msg.sender == regulatoryAuthority, /*需要是政府來刪除黑名單 update flag and time*/
             "You are not a regulator，[_VASPAddress] Error."
         );
         shareBL[_Saddr].Enabled_flag = false;
